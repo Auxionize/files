@@ -18,7 +18,7 @@ let listenApp = function() {
 		console.log('Uploader app running on http://%s:%s', host === '::' ? 'localhost' : host, port);
 	});
 };
-let initTestApp = co.wrap(function* (data) {
+let initTestApp = co.wrap(function* (sequelize, data) {
 	yield data.BigFile.sync();
 	yield data.BigFileLink.sync();
 
@@ -73,7 +73,7 @@ module.exports = {
 		BigFileLink.associate(BigFile);
 
 		// the routes uses models
-		let mainRoutes = require('./lib/routes');
+		let mainRoutes = require('./lib/routes')(BigFile, BigFileLink);
 
 		if(isTestEnv) {
 			let data = {
@@ -82,7 +82,7 @@ module.exports = {
 				BigFileLink: BigFileLink
 			};
 
-			initTestApp(data).then(function(app) {
+			initTestApp(sequelize, data).then(function(app) {
 				localApp = app;
 				listenApp();
 			});
