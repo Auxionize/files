@@ -1,0 +1,24 @@
+{
+  "name": "files",
+  "version": "0.1.0",
+  "description": "Files module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Iordan Georgiev <iordan340@gmail.com> (http://auxionize.com)",
+  "license": "ISC",
+  "devDependencies": {
+    "express": "^4.13.4"
+  },
+  "dependencies": {
+    "bluebird": "^3.3.4",
+    "co": "^4.6.0",
+    "cookie-parser": "^1.4.1",
+    "lodash": "^4.8.2",
+    "mkdirp": "^0.5.1",
+    "pg": "^4.5.2",
+    "sequelize": "^3.21.0",
+    "skipper": "^0.5.9"
+  }
+}

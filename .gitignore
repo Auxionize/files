@@ -23,8 +23,11 @@ coverage
 # Compiled binary addons (http://nodejs.org/api/addons.html)
 build/Release
 
-# Dependency directory
+.idea
+
+# Dependency directories
 node_modules
+demo/bower_components
 
 # Optional npm cache directory
 .npm
