@@ -9,7 +9,8 @@
   "author": "Iordan Georgiev <iordan340@gmail.com> (http://auxionize.com)",
   "license": "ISC",
   "devDependencies": {
-    "express": "^4.13.4"
+    "express": "^4.13.4",
+    "express-bunyan-logger": "^1.2.0"
   },
   "dependencies": {
     "bluebird": "^3.3.4",

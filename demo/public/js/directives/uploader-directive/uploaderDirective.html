@@ -1,0 +1,44 @@
+<form name="myForm">
+	<div
+		ng-if="file.isVisible"
+		class="upload-element animated"
+		ng-class="{zoomOut: file.animated}"
+		role="alert"
+		ng-repeat="(fileName, file) in vm.fileMap">
+
+		<a
+			style="font-size: 12px; text-decoration: none;"
+			ng-if="file.done"
+			href="{{vm.downloadUrl + file.data.uuid}}"
+			target="_self">
+
+			<div class="link-name">{{file.data.name}}</div>
+			<div class="link-size">({{file.data.size | bytes}})</div>
+		</a>
+
+		<div class="filename" ng-if="!file.done">{{file.data.name}}</div>
+		<span class="link-size" ng-if="!file.done">({{file.data.size | bytes}})</span>
+		<div ng-if="!file.done" class="tool-holder">
+			<i
+				ng-click="vm.unload($index, file.data.name, true)"
+				class="glyphicon glyphicon-remove link-internal">
+			</i>
+			<uib-progressbar
+				max="100"
+				value="file.progress">
+			</uib-progressbar>
+		</div>
+		<i
+			ng-if="file.done"
+			ng-click="vm.unload($index, file.data.name)"
+			class="glyphicon glyphicon-remove link-remove"></i>
+	</div>
+	<button
+		type="file"
+		class="btn btn-default"
+		ngf-select ngf-change="vm.load($files)"
+		ngf-multiple="multiple">
+		<i class="glyphicon glyphicon-paperclip"></i>
+		<span>Attach Files</span>
+	</button>
+</form>

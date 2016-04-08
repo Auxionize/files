@@ -27,8 +27,8 @@ build/Release
 
 # Dependency directories
 node_modules
-demo/bower_components
-
+demo/public/bower_components
+var
 # Optional npm cache directory
 .npm
 
