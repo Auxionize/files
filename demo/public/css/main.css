@@ -13,6 +13,11 @@ body {
 	font-size: 13px;
 }
 
+.upload-element .file-link {
+	font-size: 12px;
+	text-decoration: none;
+}
+
 .upload-element .link-name {
 	display: inline-block;
 	overflow: hidden;

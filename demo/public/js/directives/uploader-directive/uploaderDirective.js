@@ -9,9 +9,12 @@
 		.directive('uploaderDirective', function() {
 			return {
 				scope: {
-					uploadUrl: '@',
-					downloadUrl: '@',
-					multiple: '=?'
+					uploadUrl: '<',
+					downloadUrl: '<',
+					multiple: '<?',
+					maxFileSize: '<?',
+					initFiles: '<?',
+					debug: '<?'
 				},
 				templateUrl: 'js/directives/uploader-directive/uploaderDirective.html',
 				controller: UploaderCtrl,
@@ -24,96 +27,90 @@
 	var UploaderCtrl = ['$scope', '$timeout', 'Upload', function($scope, $timeout, Upload) {
 		var vm = this;
 
-		vm.abortMap = [];
-		vm.fileMap = {};
-		vm.multiple = $scope.multiple === 'true';
+		// set defaults =================================================
+		vm.files = $scope.initFiles = angular.isDefined($scope.initFiles) ? $scope.initFiles : [];
+		vm.invalidFiles = [];
+		vm.uploadUrl = $scope.uploadUrl;
 		vm.downloadUrl = $scope.downloadUrl;
-		vm.downloadUrl = vm.downloadUrl.substr(vm.downloadUrl.length - 1) === '/'
-							? vm.downloadUrl
-							: vm.downloadUrl + '/';
+		vm.multiple = $scope.multiple = angular.isDefined($scope.multiple) ? $scope.multiple : false;
+		vm.maxFileSize = $scope.maxFileSize = angular.isDefined($scope.maxFileSize) ? $scope.maxFileSize : '2GB';
+		vm.showUploadBtn = true;
+		vm.debug = $scope.debug = angular.isDefined($scope.debug) ? $scope.debug : false;
 
-		var checkForDuplicateCandidate = function(files) {
-			var uploadedMapContent = Object.keys(vm.fileMap);
+		// debug watcher ================================================
+		if(vm.debug) {
+			var watchValues = [
+				'multiple',
+				'uploadUrl',
+				'downloadUrl',
+				'maxFileSize'
+			];
 
-			if(uploadedMapContent.length === 0) {
-				return null;
-			}
-
-			var compareResult = files.map(function(currentFile) {
-				return uploadedMapContent.indexOf(currentFile.name) > -1;
+			$scope.$watchGroup(watchValues, function(newValues) {
+				vm.multiple = $scope.$eval($scope.multiple);
+				vm.uploadUrl = newValues[1];
+				vm.downloadUrl = newValues[2];
+				vm.maxFileSize = newValues[3];
 			});
+		}
 
-			return compareResult.indexOf(true) > -1;
-		};
-
-		vm.load = function($files) {
-			if($files.length === 0) {
-				return;
-			}
-
-			var hasDuplicate = checkForDuplicateCandidate($files);
-
-			if(hasDuplicate === true) {
-				// todo do something useful
-				return;
-			}
-
+		// load / upload files ==========================================
+		vm.load = function($files, $invalidFiles) {
 			var tempDate = new Date().getTime();
 
-			for (var i = 0; i < $files.length; i++) {
-				var file = $files[i];
-				var fileName = file.name;
+			vm.files = vm.files.concat($files);
+			vm.invalidFiles = $invalidFiles;
+
+			angular.forEach($files, function(file) {
 				var fileDate = new Date(tempDate++);
 
-				vm.fileMap[fileName] = {
-					data: {
-						date: fileDate,
-						name: file.name,
-						size: file.size
-					},
-					progress: 0,
-					done: false,
-					isVisible: true,
-					animated: false
+				file.data = {
+					date: fileDate,
+					name: file.name,
+					size: file.size
 				};
+				file.done = false;
+				file.isVisible = true;
+				file.animated = false;
+				file.progress = 0;
 
-				var upload = Upload.upload({
-					url: $scope.uploadUrl,
+				file.upload = Upload.upload({
+					url: vm.uploadUrl,
 					method: 'POST',
 					file: file
 				}).progress(function(evt) {
-					var fileName = evt.config.file.name;
+					file.progress = parseInt(100.0 * evt.loaded / evt.total, 10);
+				}).success(function(response) {
+					file.data = response[0];
+					file.done = true;
+					file.progress = 100;
+					file.downloadUrl = vm.downloadUrl.replace(':id', file.data.uuid);
 
-					vm.fileMap[fileName].progress = parseInt(100.0 * evt.loaded / evt.total, 10);
-				}).success(function(response, status, headers, config) {
-					var responseFileName = config.file.name;
-					var fileMapObject = vm.fileMap[responseFileName];
-
-					fileMapObject.data = response[0];
-					fileMapObject.done = true;
-					fileMapObject.progress = 100;
-				}).error(function(response, status, headers, config) {
-					// TODO something useful
+				}).error(function(response, status) {
+					if (status > 0) {
+						console.error(response);
+					}
 				});
+			});
 
-				vm.abortMap.push(upload.abort);
-			}
+			vm.showUploadBtn = !(vm.multiple === false && $files.length > 0);
 		};
 
-		vm.unload = function($index, fileName, abortUpload) {
-			abortUpload = abortUpload || false;
-
-			if(abortUpload) {
-				vm.abortMap[$index]();
+		// unload files =================================================
+		vm.unload = function($index, file) {
+			if(!file.done) {
+				file.upload.abort();
 			}
 
-			vm.abortMap.splice($index, 1);
-			vm.fileMap[fileName].animated = true;
+			file.animated = true;
 
 			$timeout(function() {
-				vm.fileMap[fileName].isVisible = false;
-				delete vm.fileMap[fileName];
+				file.isVisible = false;
+				vm.files.splice($index, 1);
+
+				vm.showUploadBtn = !(vm.multiple === false && vm.files.length > 0);
 			}, 600);
 		};
+
 	}];
 })();

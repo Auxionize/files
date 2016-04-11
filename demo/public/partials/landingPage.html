@@ -1,10 +1,60 @@
-<div class="panel panel-default" >
-	<div class="panel-heading">Simple uploader (multiple files)</div>
+<div class="panel panel-info" >
+	<div class="panel-heading">Uploader example</div>
 	<div class="panel-body">
+		<div class="row" style="margin-bottom: 50px;">
+			<div class="col-md-12">
+				<div class="jumbotron">
+					<h3>Uploader configuration</h3>
+					<form>
+						<fieldset class="form-group row">
+							<label class="col-sm-2 form-control-label" for="upload-type">Upload type</label>
+							<div class="col-sm-10">
+								<select id="upload-type" class="form-control" ng-model="vm.isMultipleUpload">
+									<option value="false">Single</option>
+									<option value="true">Multiple</option>
+								</select>
+								<i>Note: when single upload mode is selected after successful upload the 'Attach file' button is hidden.When the uploaded file is removed then the button is available again.</i>
+							</div>
+						</fieldset>
+						<fieldset class="form-group row">
+							<label class="col-sm-2 form-control-label" for="upload-url">Upload Url</label>
+							<div class="col-sm-10">
+								<input id="upload-url" type="text" class="form-control" ng-model="vm.uploadUrl">
+							</div>
+						</fieldset>
+						<fieldset class="form-group row">
+							<label class="col-sm-2 form-control-label" for="download-url">Download Url</label>
+							<div class="col-sm-10">
+								<input id="download-url" type="text" class="form-control" ng-model="vm.downloadUrl">
+								<i>Note: always include :id in order to parse the current file id correctly.</i>
+							</div>
+						</fieldset>
+						<fieldset class="form-group row">
+							<label class="col-sm-2 form-control-label" for="max-file-size">Max file size</label>
+							<div class="col-sm-10">
+								<div style="max-width: 100px;display: inline-block;">
+									<input id="max-file-size" type="text" class="form-control col-sm-6" ng-model="maxFileSize">
+								</div>
+								<div style="max-width: 100px;display: inline-block;">
+									<select ng-model="units" name="units" class="form-control col-sm-6">
+										<option value="KB">KB</option>
+										<option value="MB">MB</option>
+										<option value="GB">GB</option>
+									</select>
+								</div>
+							</div>
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+
 		<uploader-directive
-				upload-url="/bigdata/upload"
-				multiple="true"
-				download-url="/bigdata">
+				upload-url="vm.uploadUrl"
+				download-url="vm.downloadUrl"
+				multiple="vm.isMultipleUpload"
+				max-file-size="vm.computedMaxFileSize"
+				debug="true">
 		</uploader-directive>
 	</div>
 </div>
