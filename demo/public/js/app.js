@@ -7,8 +7,7 @@
 
 	angular.module('uploaderApp', [
 		'ui.router',
-		'ngFileUpload',
-		'ui.bootstrap'
+		'ui.angular-uploader'
 	])
 	.config(['$stateProvider', '$urlRouterProvider',function( $stateProvider, $urlRouterProvider) {
 		$urlRouterProvider.otherwise("/landing");
