@@ -5,6 +5,9 @@
 			<div class="col-md-12">
 				<div class="jumbotron">
 					<h3>Uploader configuration</h3>
+					<hr>
+					<i>File related</i>
+					<hr>
 					<form>
 						<fieldset class="form-group row">
 							<label class="col-sm-2 form-control-label" for="upload-type">Upload type</label>
@@ -45,6 +48,45 @@
 							</div>
 						</fieldset>
 					</form>
+					<!-- form end-->
+
+					<hr>
+					<i>User related</i>
+					<hr>
+					<form ng-if="!vm.isLoggedIn">
+						<fieldset class="form-group row">
+							<label for="username" class="col-sm-2 form-control-label">Impersonate as</label>
+							<div class="col-sm-10">
+								<select
+									id="username"
+									ng-model="vm.username"
+									style="display: inline-block;width: 152px;"
+									class="form-control">
+									<option value="User-1">User-1</option>
+									<option value="User-2">User-2</option>
+									<option value="User-3">User-3</option>
+									<option value="User-4">User-4</option>
+								</select>
+								<button
+									ng-click="vm.login()"
+									style="display: inline-block;"
+									class="btn btn-success">
+									Impersonate
+								</button>
+							</div>
+						</fieldset>
+					</form>
+					<!-- form end-->
+					<div ng-if="vm.isLoggedIn">
+						<span>Logged in as: <strong>{{user.username}}</strong></span>
+						<button
+								ng-click="vm.logout()"
+								style="margin-left: 10px;"
+								class="btn btn-danger">
+							Log out
+						</button>
+					</div>
+
 				</div>
 			</div>
 		</div>
@@ -58,4 +100,100 @@
 		</angular-uploader>
 	</div>
 </div>
+
+<div class="row" ng-if="vm.isLoggedIn">
+	<div class="col-md-12">
+		<hr>
+			<h3 class="text-center">Current User: files list</h3>
+			<table class="table table-bordered" ng-if="vm.userHasFiles">
+				<thead>
+					<tr>
+						<th>id</th>
+						<th>uuid</th>
+						<th>name</th>
+						<th>mimeType</th>
+						<th>size</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat-start="file in vm.filesList">
+						<td>{{file.id}}</td>
+						<td><a href="{{vm.downloadUrl.replace(':id', file.uuid)}}">{{file.uuid}}</a></td>
+						<td>{{file.name}}</td>
+						<td>{{file.mimeType}}</td>
+						<td>{{file.size | bytes}}</td>
+					</tr>
+					<tr ng-repeat-end>
+						<td colspan="5">
+							<strong>Links for {{file.name}} :</strong>
+							<ul>
+								<li ng-repeat="link in file.Links">
+									<p>
+										<i class="glyphicon glyphicon-link"></i>
+										referredBy: {{link.referredBy}}, type: {{link.type}}
+									</p>
+								</li>
+							</ul>
+						</td>
+					</tr>
+					<tr class="text-center">
+						<td colspan="5"><strong>Total uploaded: {{vm.totalUploaded | bytes}}</strong></td>
+					</tr>
+				</tbody>
+			</table>
+			<div ng-show="!vm.userHasFiles" class="alert alert-info" role="alert">
+				<strong>No files uploaded.</strong>
+			</div>
+		<hr>
+
+
+	</div>
+</div>
+<!-- user data end -->
+
+<div class="row">
+	<div class="col-md-12">
+		<h3 class="text-center">Admin: files list</h3>
+		<table class="table table-bordered" ng-if="vm.adminHasFiles">
+			<thead>
+			<tr>
+				<th>id</th>
+				<th>uuid</th>
+				<th>name</th>
+				<th>mimeType</th>
+				<th>size</th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr ng-repeat-start="file in vm.adminFilesList">
+				<td>{{file.id}}</td>
+				<td>{{file.uuid}}</td>
+				<td>{{file.name}}</td>
+				<td>{{file.mimeType}}</td>
+				<td>{{file.size | bytes}}</td>
+			</tr>
+			<tr ng-repeat-end>
+				<td colspan="5">
+					<strong>Links for {{file.name}} :</strong>
+					<ul>
+						<li ng-repeat="link in file.Links">
+							<p>
+								<i class="glyphicon glyphicon-link"></i>
+								referredBy: {{link.referredBy}}, type: {{link.type}}
+							</p>
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr class="text-center">
+				<td colspan="5"><strong>Total uploaded: {{vm.adminTotalUploaded | bytes}}</strong></td>
+			</tr>
+			</tbody>
+		</table>
+		<div ng-show="!vm.adminHasFiles" class="alert alert-info" role="alert">
+			<strong>No files uploaded.</strong>
+		</div>
+	</div>
+</div>
+<!-- admin data end -->
 

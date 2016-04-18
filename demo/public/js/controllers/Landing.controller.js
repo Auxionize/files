@@ -5,7 +5,7 @@
 	'use strict';
 
 	angular.module('uploaderApp')
-		.controller('LandingCtrl', ['$scope', function($scope) {
+		.controller('LandingCtrl', ['$scope', '$http', function($scope, $http) {
 			var vm = this;
 
 			vm.isMultipleUpload = 'true';
@@ -14,10 +14,91 @@
 			$scope.maxFileSize =  '2';
 			$scope.units = 'GB';
 			vm.computedMaxFileSize = vm.maxFileSize + vm.units;
+			vm.username = 'User-1';
+			vm.user = $scope.user = {};
+			vm.isLoggedIn = false;
+			vm.adminTotalUploaded = 0;
+			vm.totalUploaded = 0;
+			vm.adminFilesList = [];
+			vm.filesList = [];
+			vm.adminHasFiles = false;
+			vm.userHasFiles = false;
+
+
+			$scope.$on('file:uploaded', function() {
+				vm.getList();
+				vm.getAdminList();
+			});
+
+			$scope.$watch('user', function(newValue) {
+				vm.isLoggedIn = Object.keys(newValue).length > 0;
+
+				if(vm.isLoggedIn) {
+					vm.getList();
+				}
+			});
+
+			$http.get('/currentUser')
+				.success(function(data) {
+					$scope.user = data.user;
+				});
+
+			vm.getList = function() {
+				$http.get('/bigdata/list')
+					.success(function(list) {
+						vm.totalUploaded = 0;
+						vm.userHasFiles = list.length > 0;
+
+						if(vm.userHasFiles) {
+							angular.forEach(list, function(file) {
+								vm.totalUploaded += file.size;
+							});
+
+							vm.filesList = list;
+						}
+
+
+					});
+			};
+			vm.getAdminList = function() {
+				$http.get('/bigdata/adminlist')
+					.success(function(list) {
+						vm.adminTotalUploaded = 0;
+						vm.adminHasFiles = list.length > 0;
+
+						if(vm.adminHasFiles) {
+							angular.forEach(list, function(file) {
+								vm.adminTotalUploaded += file.size;
+							});
+
+							vm.adminFilesList = list;
+						}
+
+
+					});
+			};
+
+
+			vm.getAdminList();
 
 			$scope.$watchGroup(['maxFileSize', 'units'], function(newValues) {
 				vm.computedMaxFileSize = newValues[0] + newValues[1];
 			});
+
+
+			vm.login = function() {
+				$http.post('/login', {username: vm.username, password: 'fake'})
+					.success(function(data) {
+						$scope.user = data.user;
+					});
+			};
+
+			vm.logout = function() {
+				$http.post('/logout', {username: vm.username, password: 'fake'})
+					.success(function() {
+						$scope.user = {};
+					});
+			};
 		}]);
 })();
 

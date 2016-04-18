@@ -4,8 +4,8 @@
 'use strict';
 
 // module dependencies ================================================
-let _ = require('lodash');
-let log = require('./lib/utils/exceptions');
+const _ = require('lodash');
+const log = require('./lib/utils/exceptions');
 
 // module definition ==================================================
 module.exports = function(sequelize, filePath) {
@@ -13,19 +13,19 @@ module.exports = function(sequelize, filePath) {
 		throw new log.InstanceException('Argument `filePath` is required.');
 	}
 
-	let BigFile = require('./lib/models/BigFile')(sequelize, filePath);
 	let BigFileLink = require('./lib/models/BigFileLink')(sequelize);
+	let BigFile = require('./lib/models/BigFile')(sequelize, BigFileLink, filePath);
 
 	// associations ===================================================
 	BigFile.associate(BigFileLink);
 	BigFileLink.associate(BigFile);
 
 	// routes =========================================================
-	let Routes = require('./lib/routes')(BigFile, BigFileLink);
+	//let Routes = require('./lib/routes')(BigFile, BigFileLink);
 
 	// return result object ===========================================
 	return {
-		Routes: Routes,
+		//Routes: Routes,
 		BigFile: BigFile,
 		BigFileLink: BigFileLink
 	};
