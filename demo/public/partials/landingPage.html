@@ -62,7 +62,7 @@
 									ng-model="vm.username"
 									style="display: inline-block;width: 152px;"
 									class="form-control">
-									<option value="User-1">User-1</option>
+									<option value="User-1 (ADMIN)">User-1 (ADMIN)</option>
 									<option value="User-2">User-2</option>
 									<option value="User-3">User-3</option>
 									<option value="User-4">User-4</option>
@@ -86,25 +86,44 @@
 							Log out
 						</button>
 					</div>
-
 				</div>
+
+				<angular-uploader
+						ng-if="vm.isLoggedIn"
+						read-only="false"
+						upload-url="vm.uploadUrl"
+						download-url="vm.downloadUrl"
+						delete-url="vm.deleteUrl"
+						multiple="vm.isMultipleUpload"
+						max-file-size="vm.computedMaxFileSize"
+						debug="true">
+				</angular-uploader>
 			</div>
 		</div>
+	</div>
+</div>
 
+<div class="row" ng-if="!vm.isLoggedIn">
+	<div class="col-md-12">
+		<hr>
+		<h3>Unauthorized upload (should fail)</h3>
 		<angular-uploader
+				read-only="false"
 				upload-url="vm.uploadUrl"
 				download-url="vm.downloadUrl"
+				delete-url="vm.deleteUrl"
 				multiple="vm.isMultipleUpload"
 				max-file-size="vm.computedMaxFileSize"
 				debug="true">
 		</angular-uploader>
+		<hr>
 	</div>
 </div>
 
 <div class="row" ng-if="vm.isLoggedIn">
 	<div class="col-md-12">
 		<hr>
-			<h3 class="text-center">Current User: files list</h3>
+			<h3 class="text-center">{{user.username}}: all files list</h3>
 			<table class="table table-bordered" ng-if="vm.userHasFiles">
 				<thead>
 					<tr>
@@ -150,50 +169,4 @@
 	</div>
 </div>
 <!-- user data end -->
-
-<div class="row">
-	<div class="col-md-12">
-		<h3 class="text-center">Admin: files list</h3>
-		<table class="table table-bordered" ng-if="vm.adminHasFiles">
-			<thead>
-			<tr>
-				<th>id</th>
-				<th>uuid</th>
-				<th>name</th>
-				<th>mimeType</th>
-				<th>size</th>
-			</tr>
-			</thead>
-			<tbody>
-			<tr ng-repeat-start="file in vm.adminFilesList">
-				<td>{{file.id}}</td>
-				<td>{{file.uuid}}</td>
-				<td>{{file.name}}</td>
-				<td>{{file.mimeType}}</td>
-				<td>{{file.size | bytes}}</td>
-			</tr>
-			<tr ng-repeat-end>
-				<td colspan="5">
-					<strong>Links for {{file.name}} :</strong>
-					<ul>
-						<li ng-repeat="link in file.Links">
-							<p>
-								<i class="glyphicon glyphicon-link"></i>
-								referredBy: {{link.referredBy}}, type: {{link.type}}
-							</p>
-						</li>
-					</ul>
-				</td>
-			</tr>
-			<tr class="text-center">
-				<td colspan="5"><strong>Total uploaded: {{vm.adminTotalUploaded | bytes}}</strong></td>
-			</tr>
-			</tbody>
-		</table>
-		<div ng-show="!vm.adminHasFiles" class="alert alert-info" role="alert">
-			<strong>No files uploaded.</strong>
-		</div>
-	</div>
-</div>
-<!-- admin data end -->
 

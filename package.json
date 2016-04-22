@@ -21,6 +21,7 @@
     "cookie-parser": "^1.4.1",
     "lodash": "^4.8.2",
     "mkdirp": "^0.5.1",
+    "node-schedule": "^1.1.0",
     "pg": "^4.5.2",
     "sequelize": "^3.21.0",
     "skipper": "^0.5.9"

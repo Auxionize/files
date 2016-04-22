@@ -11,10 +11,11 @@
 			vm.isMultipleUpload = 'true';
 			vm.uploadUrl = '/bigdata/upload';
 			vm.downloadUrl = '/bigdata/:id';
+			vm.deleteUrl = '/bigdata/:id';
 			$scope.maxFileSize =  '2';
 			$scope.units = 'GB';
 			vm.computedMaxFileSize = vm.maxFileSize + vm.units;
-			vm.username = 'User-1';
+			vm.username = 'User-1 (ADMIN)';
 			vm.user = $scope.user = {};
 			vm.isLoggedIn = false;
 			vm.adminTotalUploaded = 0;
@@ -27,7 +28,6 @@
 
 			$scope.$on('file:uploaded', function() {
 				vm.getList();
-				vm.getAdminList();
 			});
 
 			$scope.$watch('user', function(newValue) {
@@ -60,26 +60,6 @@
 
 					});
 			};
-			vm.getAdminList = function() {
-				$http.get('/bigdata/adminlist')
-					.success(function(list) {
-						vm.adminTotalUploaded = 0;
-						vm.adminHasFiles = list.length > 0;
-
-						if(vm.adminHasFiles) {
-							angular.forEach(list, function(file) {
-								vm.adminTotalUploaded += file.size;
-							});
-
-							vm.adminFilesList = list;
-						}
-
-
-					});
-			};
-
-
-			vm.getAdminList();
 
 			$scope.$watchGroup(['maxFileSize', 'units'], function(newValues) {
 				vm.computedMaxFileSize = newValues[0] + newValues[1];

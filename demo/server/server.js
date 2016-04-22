@@ -5,7 +5,8 @@
 
 // dependencies =======================================================
 let co = require('co');
-let config = require('../../lib/demo/config');
+let serverConfig = require('../../lib/demo/config.demo');
+let moduleConfig = require('../../lib/config.def');
 let logger = require('express-bunyan-logger');
 let express = require('express');
 let passport = require('passport');
@@ -16,21 +17,25 @@ let _ = require('lodash');
 let app = express();
 let Sequelize = require('sequelize');
 let sequelize = new Sequelize(
-	config.DB.NAME,
-	config.DB.USER,
-	config.DB.PASSWORD,
+	serverConfig.DB.NAME,
+	serverConfig.DB.USER,
+	serverConfig.DB.PASSWORD,
 	{
-		host: config.DB.HOST,
-		dialect: config.DB.DIALECT
+		host: serverConfig.DB.HOST,
+		dialect: serverConfig.DB.DIALECT
 	}
 );
+
+// demo models ========================================================
 let User = require('../../lib/demo/models/User')(sequelize);
+let Auction = require('../../lib/demo/models/Auction')(sequelize);
+let Comment = require('../../lib/demo/models/Comment')(sequelize);
 
 // uploader module import =============================================
-let uploaderModule = require('../../index')(sequelize, config.FILE_PATH);
+let uploaderModule = require('../../index')(sequelize, moduleConfig);
 let BigFile = uploaderModule.BigFile;
 let BigFileLink = uploaderModule.BigFileLink;
-let LinkType = BigFileLink.LinkTypes;
+let LINK_TYPE = moduleConfig.LINK_TYPE;
 
 // Passport config ====================================================
 passport.use(new Strategy(
@@ -44,7 +49,6 @@ passport.use(new Strategy(
 					return done(null, user);
 				}
 			});
-
 	}
 ));
 
@@ -56,19 +60,16 @@ passport.deserializeUser(function(user, done) {
 	done(null, user);
 });
 
-
-
 // server config ======================================================
 app.enable('trust proxy');
 app.disable('x-powered-by');
-app.use(logger(config.LOG.SERVER_CONFIG));
-app.use(express.static(config.PUBLIC_PATH));
+app.use(logger(serverConfig.LOG.SERVER_CONFIG));
+app.use(express.static(serverConfig.PUBLIC_PATH));
 app.use(cookieParser());
 app.use(bodyParser());
 app.use(require('express-session')({ secret: 'mega secret', resave: false, saveUninitialized: false }));
 app.use(passport.initialize());
 app.use(passport.session());
-
 
 app.get('/currentUser', function(req, res) {
 	res.jsonp({user: req.user || {}});
@@ -94,21 +95,17 @@ app.get('/loginSuccess', function(req, res) {
 
 app.post('/bigdata/upload', function(req, res, next) {
 	co(function* () {
-		yield BigFile.upload(req, res, LinkType.USER_BUCKET);
+		// todo PASS TYPE
+		yield BigFile.upload(req, res, LINK_TYPE.USER_BUCKET);
 	}).catch(next);
 });
 
 app.get('/bigdata/list', function (req, res, next) {
 	co(function* () {
-		yield BigFile.list(req, res, LinkType.USER_BUCKET);
-	}).catch(next);
-});
-
-app.get('/bigdata/adminlist', function (req, res, next) {
-	co(function* () {
 		yield BigFile.list(req, res);
 	}).catch(next);
 });
+
 
 app.get('/bigdata/:uuid', function (req, res, next) {
 	co(function* () {
@@ -116,14 +113,14 @@ app.get('/bigdata/:uuid', function (req, res, next) {
 	}).catch(next);
 });
 
-app.delete('/bigdata/:uuid', function (req, res, next) {
+app.delete('/bigdata/:id', function (req, res, next) {
 	co(function* () {
-		yield BigFile.unlink(req, res, LinkType.USER_BUCKET);
+		yield BigFile.unlink(req, res);
 	}).catch(next);
 });
 
 app.get('*', function(req, res) {
-	res.sendFile('index.html', {root: config.PUBLIC_PATH});
+	res.sendFile('index.html', {root: serverConfig.PUBLIC_PATH});
 });
 
 
@@ -132,28 +129,24 @@ co(function*() {
 	yield BigFile.sync();
 	yield BigFileLink.sync();
 	yield User.sync();
+	yield Auction.sync();
+	yield Comment.sync();
 
-	let userNames = [
-		'User-1',
-		'User-2',
-		'User-3',
-		'User-4'
-	];
+	let hasUsers = yield User.findById(1);
+	let hasAuctions = yield Auction.findById(1);
+	let hasComments = yield Comment.findById(1);
+	let createRecords = hasUsers === null && hasAuctions === null && hasComments === null;
+	let i;
 
-	let usersExist = yield User.findAll({
-		where: {
-			username: {$in: userNames}
+	if(createRecords) {
+		for (i = 0; i < 4; i++) {
+			yield User.create({username: 'User-' + (i + 1) + (i === 0 ? ' (ADMIN)' : ''), type: i === 0 ? 'ADMIN' : 'USER'});
+			yield Auction.create({name: 'Auction-' + (i + 1)});
+			yield Comment.create({message: 'Comment-' + (i + 1)});
 		}
-	});
-
-	if(usersExist.length === 0) {
-		yield User.create({username: userNames[0]});
-		yield User.create({username: userNames[1]});
-		yield User.create({username: userNames[2]});
-		yield User.create({username: userNames[3]});
 	}
 
-	let server = app.listen(config.PORT, function() {
+	let server = app.listen(serverConfig.PORT, function() {
 		let host = server.address().address;
 		let port = server.address().port;
 		let logString = 'Uploader app running on http://%s:%s';
