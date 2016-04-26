@@ -1,0 +1,58 @@
+<div ng-if="vm.commentFormIsVisible">
+	<div class="input-group">
+		<textarea
+			cols="60"
+			rows="3"
+			class="form-control"
+			ng-model="vm.message"
+		></textarea>
+	</div>
+
+	<hr>
+
+	<angular-uploader
+		read-only="false"
+		upload-url="vm.commentUploadUrl"
+		download-url="vm.downloadUrl"
+		delete-url="vm.deleteUrl"
+		multiple="true"
+		on-file-uploaded="vm.onFileUploaded"
+		on-file-removed="vm.onFileRemoved"
+		on-upload-init="vm.toggleDisableState"
+		on-upload-end="vm.toggleDisableState"
+		max-file-size="vm.maxFileSize">
+	</angular-uploader>
+	<button
+		ng-disabled="vm.publishIsDisabled"
+		ng-click="vm.publishComment()"
+		style="margin-top: 10px;"
+		class="btn btn-success">
+		Publish Comment
+	</button>
+</div>
+
+
+<button
+	ng-if="!vm.commentFormIsVisible"
+	ng-click="vm.toggleCommentForm()"
+	style="margin-top: 10px;"
+	class="btn btn-info">
+	Add comment
+</button>
+
+<hr>
+<h4>Comments list</h4>
+<i ng-if="vm.comments.length === 0">No comments found.</i>
+<div ng-if="vm.comments.length > 0">
+	<div
+		style="border-left: 3px solid orange;padding-left: 10px;"
+		ng-repeat-start="comment in vm.comments">
+		<p>{{comment.message}}</p>
+		<angular-uploader
+				init-files="comment.attachments"
+				download-url="vm.downloadUrl"
+				read-only="true">
+		</angular-uploader>
+	</div>
+	<hr ng-repeat-end>
+</div>

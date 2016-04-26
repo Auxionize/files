@@ -5,6 +5,7 @@
 
 // dependencies =======================================================
 let co = require('co');
+let coForeach = require('co-foreach');
 let serverConfig = require('../../lib/demo/config.demo');
 let moduleConfig = require('../../lib/config.def');
 let logger = require('express-bunyan-logger');
@@ -95,7 +96,6 @@ app.get('/loginSuccess', function(req, res) {
 
 app.post('/bigdata/upload', function(req, res, next) {
 	co(function* () {
-		// todo PASS TYPE
 		yield BigFile.upload(req, res, LINK_TYPE.USER_BUCKET);
 	}).catch(next);
 });
@@ -118,6 +118,152 @@ app.delete('/bigdata/:id', function (req, res, next) {
 		yield BigFile.unlink(req, res);
 	}).catch(next);
 });
+
+app.get('/allDemoData', function(req, res) {
+	co(function*() {
+		let auctions = yield Auction.findAll();
+		let comments = yield Auction.findAll();
+
+		coForeach(auctions, function*(auction, index) {
+			let contract = [];
+			let attachments = [];
+
+			let contractLink = yield BigFileLink.findOne({
+				where: {type: LINK_TYPE.AUCTION_CONTRACT, referredBy: auction.id},
+				include: [
+					{model: BigFile, required: false}
+				]
+			});
+
+			let attachmentLinks = yield BigFileLink.findAll({
+				where: {type: LINK_TYPE.AUCTION_ATTACHMENT, referredBy: auction.id},
+				include: [
+					{model: BigFile, required: false}
+				]
+			});
+
+			if(contractLink !== null && contractLink.BigFile !== null) {
+				contract.push(contractLink.BigFile.toJSON());
+				contract[0].linkId = contractLink.id;
+			}
+
+			if(attachmentLinks.length > 0) {
+				_.forEach(attachmentLinks, function(attachmentLink) {
+					if(attachmentLink.BigFile !== null) {
+						var currentAttachment = attachmentLink.BigFile.toJSON();
+
+						currentAttachment.linkId = attachmentLink.id;
+
+						attachments.push(currentAttachment);
+					}
+				});
+			}
+
+			auctions[index].dataValues.contract = contract;
+			auctions[index].dataValues.attachments = attachments;
+
+
+		})
+		.then(function() {
+			res.jsonp({auctions, comments});
+		});
+
+
+
+	});
+
+});
+
+app.post('/bigdata/auction/:id/contract', function (req, res, next) {
+	co(function* () {
+		yield BigFile.upload(req, res, LINK_TYPE.AUCTION_CONTRACT);
+	}).catch(next);
+});
+
+app.post('/bigdata/auction/:id/attachment', function (req, res, next) {
+	co(function* () {
+		yield BigFile.upload(req, res, LINK_TYPE.AUCTION_ATTACHMENT);
+	}).catch(next);
+});
+
+app.post('/saveComment', function(req, res) {
+	co(function*() {
+		let message = req.body.message || false;
+		let attachments = req.body.attachments || [];
+
+		let comment = yield Comment.create({message});
+
+		comment.dataValues.attachments = [];
+
+		coForeach(attachments, function*(attachment) {
+			yield BigFileLink.update({
+				type: LINK_TYPE.COMM_ATTACHMENT,
+				referredBy: comment.id
+			},
+			{where: {id: attachment.linkId}});
+
+		})
+		.then(function() {
+			co(function*() {
+				let attachmentLinks = yield BigFileLink.findAll({
+					where: {type: LINK_TYPE.COMM_ATTACHMENT, referredBy: comment.id},
+					include: [
+						{model: BigFile, required: false}
+					]
+				});
+
+				if(attachmentLinks.length > 0) {
+					_.forEach(attachmentLinks, function(attachmentLink) {
+						if(attachmentLink.BigFile !== null) {
+							var currentAttachment = attachmentLink.BigFile.toJSON();
+
+							currentAttachment.linkId = attachmentLink.id;
+							comment.dataValues.attachments.push(currentAttachment);
+						}
+					});
+				}
+
+				res.jsonp({comment});
+			});
+
+		});
+	});
+});
+
+app.get('/comments', function(req, res) {
+	co(function*() {
+		let comments = yield Comment.findAll({order: 'id DESC'});
+
+		coForeach(comments, function*(comment, index) {
+			comments[index].dataValues.attachments = [];
+
+			let attachmentLinks = yield BigFileLink.findAll({
+				where: {type: LINK_TYPE.COMM_ATTACHMENT, referredBy: comment.id},
+				include: [
+					{model: BigFile, required: false}
+				]
+			});
+
+			if(attachmentLinks.length > 0) {
+				_.forEach(attachmentLinks, function(attachmentLink) {
+					if(attachmentLink.BigFile !== null) {
+						var currentAttachment = attachmentLink.BigFile.toJSON();
+
+						currentAttachment.linkId = attachmentLink.id;
+						comments[index].dataValues.attachments.push(currentAttachment);
+					}
+				});
+			}
+
+
+		})
+		.then(function() {
+			res.jsonp({comments});
+		});
+
+	});
+});
+
 
 app.get('*', function(req, res) {
 	res.sendFile('index.html', {root: serverConfig.PUBLIC_PATH});
@@ -142,7 +288,6 @@ co(function*() {
 		for (i = 0; i < 4; i++) {
 			yield User.create({username: 'User-' + (i + 1) + (i === 0 ? ' (ADMIN)' : ''), type: i === 0 ? 'ADMIN' : 'USER'});
 			yield Auction.create({name: 'Auction-' + (i + 1)});
-			yield Comment.create({message: 'Comment-' + (i + 1)});
 		}
 	}
 

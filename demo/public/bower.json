@@ -14,7 +14,9 @@
   "homepage": "",
   "private": true,
   "dependencies": {
-    "angular-uploader": "Auxionize/angular-uploader#^0.1.7-alpha",
-    "satellizer": "^0.14.0"
+    "angular-uploader": "Auxionize/angular-uploader#^0.1.8-alpha"
+  },
+  "resolutions": {
+    "angular": "1.5.5"
   }
 }

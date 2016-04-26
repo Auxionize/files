@@ -8,6 +8,7 @@
 		.controller('LandingCtrl', ['$scope', '$http', function($scope, $http) {
 			var vm = this;
 
+			vm.false = false;
 			vm.isMultipleUpload = 'true';
 			vm.uploadUrl = '/bigdata/upload';
 			vm.downloadUrl = '/bigdata/:id';
@@ -24,6 +25,12 @@
 			vm.filesList = [];
 			vm.adminHasFiles = false;
 			vm.userHasFiles = false;
+			vm.auctions = [];
+			vm.comments = [];
+
+			vm.contractMaxFileSize = '5GB';
+			vm.contractUploadUrls = [];
+			vm.attachmentUploadUrls = [];
 
 
 			$scope.$on('file:uploaded', function() {
@@ -42,6 +49,20 @@
 				.success(function(data) {
 					$scope.user = data.user;
 				});
+
+			vm.getDemoData = function() {
+				$http.get('/allDemoData')
+					.success(function(data) {
+						vm.auctions = data.auctions;
+
+						angular.forEach(vm.auctions, function(auction) {
+							vm.contractUploadUrls.push('/bigdata/auction/' + auction.id + '/contract');
+							vm.attachmentUploadUrls.push('/bigdata/auction/' + auction.id + '/attachment');
+						});
+
+						vm.comments = data.comments;
+					});
+			};
 
 			vm.getList = function() {
 				$http.get('/bigdata/list')
@@ -79,6 +100,8 @@
 						$scope.user = {};
 					});
 			};
+
+			vm.getDemoData();
 		}]);
 })();
 

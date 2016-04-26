@@ -1,58 +1,8 @@
 <div class="panel panel-info" >
-	<div class="panel-heading">Uploader example</div>
+	<div class="panel-heading">User settings</div>
 	<div class="panel-body">
 		<div class="row" style="margin-bottom: 50px;">
 			<div class="col-md-12">
-				<div class="jumbotron">
-					<h3>Uploader configuration</h3>
-					<hr>
-					<i>File related</i>
-					<hr>
-					<form>
-						<fieldset class="form-group row">
-							<label class="col-sm-2 form-control-label" for="upload-type">Upload type</label>
-							<div class="col-sm-10">
-								<select id="upload-type" class="form-control" ng-model="vm.isMultipleUpload">
-									<option value="false">Single</option>
-									<option value="true">Multiple</option>
-								</select>
-								<i>Note: when single upload mode is selected after successful upload the 'Attach file' button is hidden.When the uploaded file is removed then the button is available again.</i>
-							</div>
-						</fieldset>
-						<fieldset class="form-group row">
-							<label class="col-sm-2 form-control-label" for="upload-url">Upload Url</label>
-							<div class="col-sm-10">
-								<input id="upload-url" type="text" class="form-control" ng-model="vm.uploadUrl">
-							</div>
-						</fieldset>
-						<fieldset class="form-group row">
-							<label class="col-sm-2 form-control-label" for="download-url">Download Url</label>
-							<div class="col-sm-10">
-								<input id="download-url" type="text" class="form-control" ng-model="vm.downloadUrl">
-								<i>Note: always include :id in order to parse the current file id correctly.</i>
-							</div>
-						</fieldset>
-						<fieldset class="form-group row">
-							<label class="col-sm-2 form-control-label" for="max-file-size">Max file size</label>
-							<div class="col-sm-10">
-								<div style="max-width: 100px;display: inline-block;">
-									<input id="max-file-size" type="text" class="form-control col-sm-6" ng-model="maxFileSize">
-								</div>
-								<div style="max-width: 100px;display: inline-block;">
-									<select ng-model="units" name="units" class="form-control col-sm-6">
-										<option value="KB">KB</option>
-										<option value="MB">MB</option>
-										<option value="GB">GB</option>
-									</select>
-								</div>
-							</div>
-						</fieldset>
-					</form>
-					<!-- form end-->
-
-					<hr>
-					<i>User related</i>
-					<hr>
 					<form ng-if="!vm.isLoggedIn">
 						<fieldset class="form-group row">
 							<label for="username" class="col-sm-2 form-control-label">Impersonate as</label>
@@ -86,39 +36,68 @@
 							Log out
 						</button>
 					</div>
-				</div>
-
-				<angular-uploader
-						ng-if="vm.isLoggedIn"
-						read-only="false"
-						upload-url="vm.uploadUrl"
-						download-url="vm.downloadUrl"
-						delete-url="vm.deleteUrl"
-						multiple="vm.isMultipleUpload"
-						max-file-size="vm.computedMaxFileSize"
-						debug="true">
-				</angular-uploader>
 			</div>
 		</div>
 	</div>
 </div>
 
-<div class="row" ng-if="!vm.isLoggedIn">
+<div class="row">
 	<div class="col-md-12">
-		<hr>
-		<h3>Unauthorized upload (should fail)</h3>
-		<angular-uploader
-				read-only="false"
-				upload-url="vm.uploadUrl"
-				download-url="vm.downloadUrl"
-				delete-url="vm.deleteUrl"
-				multiple="vm.isMultipleUpload"
-				max-file-size="vm.computedMaxFileSize"
-				debug="true">
-		</angular-uploader>
-		<hr>
+		<div ng-repeat="item in vm.auctions" class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">{{item.name}}</h3>
+			</div>
+			<div class="panel-body">
+				<div class="row">
+					<div class="col-md-6">
+						<p>Contract</p>
+						<angular-uploader
+								init-files="item.contract"
+								read-only="false"
+								upload-url="vm.contractUploadUrls[$index]"
+								download-url="vm.downloadUrl"
+								delete-url="vm.deleteUrl"
+								multiple="false"
+								max-file-size="vm.contractMaxFileSize">
+						</angular-uploader>
+					</div>
+					<div class="col-md-6">
+						<p>Attachments</p>
+						<angular-uploader
+								init-files="item.attachments"
+								read-only="false"
+								upload-url="vm.attachmentUploadUrls[$index]"
+								download-url="vm.downloadUrl"
+								delete-url="vm.deleteUrl"
+								multiple="true"
+								max-file-size="vm.contractMaxFileSize">
+						</angular-uploader>
+					</div>
+
+				</div>
+
+			</div>
+		</div>
 	</div>
 </div>
+
+<div class="row">
+	<div class="col-md-12">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Comments</h3>
+			</div>
+			<div class="panel-body">
+				<div class="row">
+					<div class="col-md-12">
+						<comment-form></comment-form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
 
 <div class="row" ng-if="vm.isLoggedIn">
 	<div class="col-md-12">

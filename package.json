@@ -9,6 +9,7 @@
   "author": "Iordan Georgiev <iordan340@gmail.com> (http://auxionize.com)",
   "license": "ISC",
   "devDependencies": {
+    "co-foreach": "^1.1.1",
     "express": "^4.13.4",
     "express-bunyan-logger": "^1.2.0",
     "express-session": "^1.13.0",
