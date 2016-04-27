@@ -5,7 +5,6 @@
 
 // dependencies =======================================================
 let co = require('co');
-let coForeach = require('co-foreach');
 let serverConfig = require('../../lib/demo/config.demo');
 let moduleConfig = require('../../lib/config.def');
 let logger = require('express-bunyan-logger');
@@ -14,7 +13,6 @@ let passport = require('passport');
 let Strategy = require('passport-local').Strategy;
 let cookieParser = require('cookie-parser');
 let bodyParser = require('skipper');
-let _ = require('lodash');
 let app = express();
 let Sequelize = require('sequelize');
 let sequelize = new Sequelize(
@@ -36,7 +34,20 @@ let Comment = require('../../lib/demo/models/Comment')(sequelize);
 let uploaderModule = require('../../index')(sequelize, moduleConfig);
 let BigFile = uploaderModule.BigFile;
 let BigFileLink = uploaderModule.BigFileLink;
-let LINK_TYPE = moduleConfig.LINK_TYPE;
+
+// demo controller ====================================================
+let DemoController = require('../../lib/demo/controllers/DemoController');
+
+let ControllerArguments = [
+	moduleConfig,
+	serverConfig,
+	BigFile,
+	BigFileLink,
+	Auction,
+	Comment
+];
+
+DemoController.initWith.apply(null, ControllerArguments);
 
 // Passport config ====================================================
 passport.use(new Strategy(
@@ -72,203 +83,41 @@ app.use(require('express-session')({ secret: 'mega secret', resave: false, saveU
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get('/currentUser', function(req, res) {
-	res.jsonp({user: req.user || {}});
-});
+// Routes =============================================================
+app.get('/currentUser', DemoController.getUser);
 
 app.post('/login', passport.authenticate('local', {
 	successRedirect: '/loginSuccess',
 	failureRedirect: '/loginFailure'
 }));
 
-app.post('/logout', function(req, res) {
-	req.logout();
-	res.jsonp({msg: 'Logged out'});
-});
+app.post('/logout', DemoController.logOut);
 
-app.get('/loginFailure', function(req, res) {
-	res.jsonp({user: {}});
-});
+app.get('/loginFailure', DemoController.loginFailure);
 
-app.get('/loginSuccess', function(req, res) {
-	res.jsonp({user: req.user});
-});
+app.get('/loginSuccess', DemoController.loginSuccess);
 
-app.post('/bigdata/upload', function(req, res, next) {
-	co(function* () {
-		yield BigFile.upload(req, res, LINK_TYPE.USER_BUCKET);
-	}).catch(next);
-});
+app.post('/bigdata/upload', DemoController.upload);
 
-app.get('/bigdata/list', function (req, res, next) {
-	co(function* () {
-		yield BigFile.list(req, res);
-	}).catch(next);
-});
+app.get('/bigdata/list', DemoController.list);
 
+app.get('/bigdata/:uuid', DemoController.getFile);
 
-app.get('/bigdata/:uuid', function (req, res, next) {
-	co(function* () {
-		yield BigFile.serveFileWithUUID(req, res);
-	}).catch(next);
-});
+app.delete('/bigdata/:id', DemoController.unlinkFile);
 
-app.delete('/bigdata/:id', function (req, res, next) {
-	co(function* () {
-		yield BigFile.unlink(req, res);
-	}).catch(next);
-});
+app.get('/allDemoData', DemoController.getDemoData);
 
-app.get('/allDemoData', function(req, res) {
-	co(function*() {
-		let auctions = yield Auction.findAll();
-		let comments = yield Auction.findAll();
+app.post('/bigdata/auction/:id/contract', DemoController.uploadContract);
 
-		coForeach(auctions, function*(auction, index) {
-			let contract = [];
-			let attachments = [];
+app.post('/bigdata/auction/:id/attachment', DemoController.uploadAttachment);
 
-			let contractLink = yield BigFileLink.findOne({
-				where: {type: LINK_TYPE.AUCTION_CONTRACT, referredBy: auction.id},
-				include: [
-					{model: BigFile, required: false}
-				]
-			});
+app.post('/saveComment', DemoController.saveComment);
 
-			let attachmentLinks = yield BigFileLink.findAll({
-				where: {type: LINK_TYPE.AUCTION_ATTACHMENT, referredBy: auction.id},
-				include: [
-					{model: BigFile, required: false}
-				]
-			});
+app.get('/comments', DemoController.getComments);
 
-			if(contractLink !== null && contractLink.BigFile !== null) {
-				contract.push(contractLink.BigFile.toJSON());
-				contract[0].linkId = contractLink.id;
-			}
+app.post('/addType', DemoController.addType);
 
-			if(attachmentLinks.length > 0) {
-				_.forEach(attachmentLinks, function(attachmentLink) {
-					if(attachmentLink.BigFile !== null) {
-						var currentAttachment = attachmentLink.BigFile.toJSON();
-
-						currentAttachment.linkId = attachmentLink.id;
-
-						attachments.push(currentAttachment);
-					}
-				});
-			}
-
-			auctions[index].dataValues.contract = contract;
-			auctions[index].dataValues.attachments = attachments;
-
-
-		})
-		.then(function() {
-			res.jsonp({auctions, comments});
-		});
-
-
-
-	});
-
-});
-
-app.post('/bigdata/auction/:id/contract', function (req, res, next) {
-	co(function* () {
-		yield BigFile.upload(req, res, LINK_TYPE.AUCTION_CONTRACT);
-	}).catch(next);
-});
-
-app.post('/bigdata/auction/:id/attachment', function (req, res, next) {
-	co(function* () {
-		yield BigFile.upload(req, res, LINK_TYPE.AUCTION_ATTACHMENT);
-	}).catch(next);
-});
-
-app.post('/saveComment', function(req, res) {
-	co(function*() {
-		let message = req.body.message || false;
-		let attachments = req.body.attachments || [];
-
-		let comment = yield Comment.create({message});
-
-		comment.dataValues.attachments = [];
-
-		coForeach(attachments, function*(attachment) {
-			yield BigFileLink.update({
-				type: LINK_TYPE.COMM_ATTACHMENT,
-				referredBy: comment.id
-			},
-			{where: {id: attachment.linkId}});
-
-		})
-		.then(function() {
-			co(function*() {
-				let attachmentLinks = yield BigFileLink.findAll({
-					where: {type: LINK_TYPE.COMM_ATTACHMENT, referredBy: comment.id},
-					include: [
-						{model: BigFile, required: false}
-					]
-				});
-
-				if(attachmentLinks.length > 0) {
-					_.forEach(attachmentLinks, function(attachmentLink) {
-						if(attachmentLink.BigFile !== null) {
-							var currentAttachment = attachmentLink.BigFile.toJSON();
-
-							currentAttachment.linkId = attachmentLink.id;
-							comment.dataValues.attachments.push(currentAttachment);
-						}
-					});
-				}
-
-				res.jsonp({comment});
-			});
-
-		});
-	});
-});
-
-app.get('/comments', function(req, res) {
-	co(function*() {
-		let comments = yield Comment.findAll({order: 'id DESC'});
-
-		coForeach(comments, function*(comment, index) {
-			comments[index].dataValues.attachments = [];
-
-			let attachmentLinks = yield BigFileLink.findAll({
-				where: {type: LINK_TYPE.COMM_ATTACHMENT, referredBy: comment.id},
-				include: [
-					{model: BigFile, required: false}
-				]
-			});
-
-			if(attachmentLinks.length > 0) {
-				_.forEach(attachmentLinks, function(attachmentLink) {
-					if(attachmentLink.BigFile !== null) {
-						var currentAttachment = attachmentLink.BigFile.toJSON();
-
-						currentAttachment.linkId = attachmentLink.id;
-						comments[index].dataValues.attachments.push(currentAttachment);
-					}
-				});
-			}
-
-
-		})
-		.then(function() {
-			res.jsonp({comments});
-		});
-
-	});
-});
-
-
-app.get('*', function(req, res) {
-	res.sendFile('index.html', {root: serverConfig.PUBLIC_PATH});
-});
-
+app.get('*', DemoController.serveIndex);
 
 // server init ========================================================
 co(function*() {
@@ -280,14 +129,17 @@ co(function*() {
 
 	let hasUsers = yield User.findById(1);
 	let hasAuctions = yield Auction.findById(1);
-	let hasComments = yield Comment.findById(1);
-	let createRecords = hasUsers === null && hasAuctions === null && hasComments === null;
+	let createRecords = hasUsers === null && hasAuctions === null;
 	let i;
 
 	if(createRecords) {
 		for (i = 0; i < 4; i++) {
-			yield User.create({username: 'User-' + (i + 1) + (i === 0 ? ' (ADMIN)' : ''), type: i === 0 ? 'ADMIN' : 'USER'});
-			yield Auction.create({name: 'Auction-' + (i + 1)});
+			let username = 'User-' + (i + 1) + (i === 0 ? ' (ADMIN)' : '');
+			let type = i === 0 ? 'ADMIN' : 'USER';
+			let name = 'Auction-' + (i + 1);
+
+			yield User.create({username, type});
+			yield Auction.create({name});
 		}
 	}
 

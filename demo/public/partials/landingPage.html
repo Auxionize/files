@@ -1,8 +1,8 @@
 <div class="panel panel-info" >
-	<div class="panel-heading">User settings</div>
+	<div class="panel-heading">Settings</div>
 	<div class="panel-body">
 		<div class="row" style="margin-bottom: 50px;">
-			<div class="col-md-12">
+			<div class="col-md-6">
 					<form ng-if="!vm.isLoggedIn">
 						<fieldset class="form-group row">
 							<label for="username" class="col-sm-2 form-control-label">Impersonate as</label>
@@ -36,6 +36,34 @@
 							Log out
 						</button>
 					</div>
+			</div>
+			<div class="col-md-6">
+				<form>
+					<fieldset class="form-group row">
+						<label for="type" class="col-sm-2 form-control-label">New type</label>
+						<div class="col-sm-10">
+							<input
+								id="type"
+								type="text"
+								style="display: inline-block;width: 152px;"
+								ng-model="vm.linkType"
+								class="form-control">
+
+							<button
+									ng-click="vm.addType()"
+									style="display: inline-block;"
+									class="btn btn-success">
+								Add type
+							</button>
+						</div>
+					</fieldset>
+				</form>
+				<p>Available link types (dynamic list from db):</p>
+
+				<ul>
+					<li ng-repeat="item in vm.linkTypes">{{item.type}}</li>
+				</ul>
+
 			</div>
 		</div>
 	</div>
@@ -98,11 +126,11 @@
 	</div>
 </div>
 
-
 <div class="row" ng-if="vm.isLoggedIn">
 	<div class="col-md-12">
 		<hr>
-			<h3 class="text-center">{{user.username}}: all files list</h3>
+			<h3 ng-if="user.id == 1" class="text-center">{{user.username}}: all files list</h3>
+			<h3 ng-if="user.id > 1" class="text-center">{{user.username}}: all files @quota usage</h3>
 			<table class="table table-bordered" ng-if="vm.userHasFiles">
 				<thead>
 					<tr>
@@ -143,8 +171,6 @@
 				<strong>No files uploaded.</strong>
 			</div>
 		<hr>
-
-
 	</div>
 </div>
 <!-- user data end -->

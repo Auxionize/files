@@ -33,6 +33,7 @@
 		vm.resetForm = function() {
 			vm.publishIsDisabled = false;
 			vm.comments = [];
+			vm.commentAttachments = [];
 			vm.commentFormIsVisible = false;
 			vm.message = '';
 		};
@@ -66,10 +67,16 @@
 		};
 
 		vm.publishComment = function() {
+			if(vm.message === '') {
+				console.error("Please add comment message");
+				return;
+			}
+
 			var messageData = {
 				attachments: vm.commentAttachments,
 				message: vm.message
 			};
+
 			$http.post('/saveComment', messageData)
 				.success(function() {
 					vm.resetForm();

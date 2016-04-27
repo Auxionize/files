@@ -27,7 +27,7 @@
 			vm.userHasFiles = false;
 			vm.auctions = [];
 			vm.comments = [];
-
+			vm.linkTypes = [];
 			vm.contractMaxFileSize = '5GB';
 			vm.contractUploadUrls = [];
 			vm.attachmentUploadUrls = [];
@@ -54,6 +54,7 @@
 				$http.get('/allDemoData')
 					.success(function(data) {
 						vm.auctions = data.auctions;
+						vm.linkTypes = data.linkTypes;
 
 						angular.forEach(vm.auctions, function(auction) {
 							vm.contractUploadUrls.push('/bigdata/auction/' + auction.id + '/contract');
@@ -78,14 +79,12 @@
 							vm.filesList = list;
 						}
 
-
 					});
 			};
 
 			$scope.$watchGroup(['maxFileSize', 'units'], function(newValues) {
 				vm.computedMaxFileSize = newValues[0] + newValues[1];
 			});
-
 
 			vm.login = function() {
 				$http.post('/login', {username: vm.username, password: 'fake'})
@@ -102,6 +101,20 @@
 			};
 
 			vm.getDemoData();
+
+			vm.addType = function() {
+				$http.post('/addType', {type: vm.linkType})
+					.success(function(data) {
+						if(angular.isDefined(data.linkTypes)) {
+							vm.linkTypes = data.linkTypes;
+						}
+						else {
+							console.error(data.error);
+						}
+
+						vm.linkType = '';
+					});
+			};
 		}]);
 })();
 
