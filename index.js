@@ -23,8 +23,8 @@ module.exports = function(sequelize, config) {
 	let BigFile = require('./lib/models/BigFile')(sequelize, BigFileLink, config);
 
 	// associations ===================================================
-	BigFile.associate(BigFileLink);
-	BigFileLink.associate(BigFile);
+	BigFile.associateInternal(BigFileLink);
+	BigFileLink.associateInternal(BigFile);
 
 	// run cron job ===================================================
 	cronJob.run();
