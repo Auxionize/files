@@ -5,7 +5,7 @@
 
 // dependencies =======================================================
 let co = require('co');
-let serverConfig = require('../../lib/demo/config.demo');
+let serverConfig = require('./config.demo');
 let moduleConfig = require('../../lib/config.def');
 let logger = require('express-bunyan-logger');
 let express = require('express');
@@ -26,9 +26,9 @@ let sequelize = new Sequelize(
 );
 
 // demo models ========================================================
-let User = require('../../lib/demo/models/User')(sequelize);
-let Auction = require('../../lib/demo/models/Auction')(sequelize);
-let Comment = require('../../lib/demo/models/Comment')(sequelize);
+let User = require('./models/User')(sequelize);
+let Auction = require('./models/Auction')(sequelize);
+let Comment = require('./models/Comment')(sequelize);
 
 // uploader module import =============================================
 let uploaderModule = require('../../index')(sequelize, moduleConfig);
@@ -36,7 +36,7 @@ let BigFile = uploaderModule.BigFile;
 let BigFileLink = uploaderModule.BigFileLink;
 
 // demo controller ====================================================
-let DemoController = require('../../lib/demo/controllers/DemoController');
+let DemoController = require('./controllers/DemoController');
 
 let ControllerArguments = [
 	moduleConfig,

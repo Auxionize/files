@@ -80,6 +80,7 @@
 					<div class="col-md-6">
 						<p>Contract</p>
 						<angular-uploader
+								btn-text="'Attach contract'"
 								init-files="item.contract"
 								read-only="false"
 								upload-url="vm.contractUploadUrls[$index]"
@@ -92,6 +93,7 @@
 					<div class="col-md-6">
 						<p>Attachments</p>
 						<angular-uploader
+								btn-text="'Attach files'"
 								init-files="item.attachments"
 								read-only="false"
 								upload-url="vm.attachmentUploadUrls[$index]"
