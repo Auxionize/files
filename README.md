@@ -29,7 +29,7 @@ If you want to play around with the demo folder you should checkout the git repo
 - node-config instance with the following structure
 
 Note that all config files in config directory will be ignored from git by default.
-In order to overwrite the default configuration you need to create 'development.js' config file with the following structure. If some attributes are missing the default values will be in use(when working with the demo when in production you have to provide node-config instance).
+In order to overwrite the default configuration you need to create 'development.js' config file with the following structure. If some attributes are missing the default values will be in use(when in production you have to provide node-config instance with the required data provided).
 
 ```
 // example configuration module
