@@ -28,7 +28,58 @@ also edit @/demo/config.demo.js with you local settings. Run /demo/server/server
 ###### Requirements
 
 - sequelize instance
-- module configuration (if not present default values will be applied)
+- node-config instance with the following structure
+
+Note that all config files in config directory will be ignored from git by default.
+In order to overwrite the default configuration you need to create 'development.js' config file with the following structure. If some attributes are missing the default values will be in use.
+
+```
+// example configuration module
+'use strict';
+
+let path = require('path');
+const BASE = path.join(__dirname, './../');
+const PUBLIC_PATH = path.join(BASE, 'demo', 'public');
+const FILE_PATH = path.join(BASE, 'var', 'bigfiles');
+const TEMP_FILE_PATH = path.join(BASE, 'var', 'temp');
+
+module.exports = {
+	// module related =================================================
+	FILE_PATH: FILE_PATH,// absolute path where files will be stored
+	TEMP_FILE_PATH: TEMP_FILE_PATH,// absolute path where temporary files will be stored
+	USER_QUOTA: 5,// GB - max file size upload when files has linkType 'USER_BUCKET'
+	MAX_FILE_SIZE: 2,// GB - max file size the server will handle per request
+	LINK_TYPE: {
+	// default link types that you can extend here
+	// also you need to add the enum value with the BigFileLink.addType('MY_TYPE') method
+		USER_BUCKET: 'USER_BUCKET',
+		AUCTION_ATTACHMENT: 'AUCTION_ATTACHMENT',
+		AUCTION_CONTRACT: 'AUCTION_CONTRACT',
+		COMM_ATTACHMENT: 'COMM_ATTACHMENT'
+	},
+	// We have cron job runnung each day @00:20h
+	// TEMP_FILE_LIFETIME is the time in minutes to be preserved in temp folder
+	// when the time exceeds all older files will be automatically deleted
+	TEMP_FILE_LIFETIME: 60,
+	// server related =================================================
+	PORT: 3000,
+	PUBLIC_PATH: PUBLIC_PATH,// the public path containing all assets
+	DB: {// database configuration
+		HOST: 'localhost',
+		NAME: 'files-test',
+		USER: 'postgres',
+		PASSWORD: 'pass',
+		DIALECT: 'postgres'
+	},
+	LOG: {// server log options see https://github.com/villadora/express-bunyan-logger for further reference
+		SERVER_CONFIG: {
+			name: 'logger'
+		}
+	}
+};
+
+
+```
 
 Example
 
