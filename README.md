@@ -18,9 +18,8 @@ or add it in your package.json as follows
 
 and then npm install from your project appropriate folder.
 
-If you want to play around with the demo folder you should checkout the git repo.
-Then you can 'npm install' it from the root folder and in order to obtain all required assets
-@/demo/public 'bower install'. One last requirement is to have local postres server running and to configure your server instances as follows. Finally run /demo/server/server.js and you're ready to go.
+If you want to play around with the demo folder you should checkout the git repo you can 'npm install' it from the root folder and in order to obtain all required assets
+@/demo/public 'bower install'. One last requirement is to have local Postres server running and to configure your server instances as follows. Finally run /demo/server/server.js and you're ready to go.
 
 ### Usage
 
@@ -30,7 +29,7 @@ Then you can 'npm install' it from the root folder and in order to obtain all re
 - node-config instance with the following structure
 
 Note that all config files in config directory will be ignored from git by default.
-In order to overwrite the default configuration you need to create 'development.js' config file with the following structure. If some attributes are missing the default values will be in use.
+In order to overwrite the default configuration you need to create 'development.js' config file with the following structure. If some attributes are missing the default values will be in use(when working with the demo when in production you have to provide node-config instance).
 
 ```
 // example configuration module
@@ -80,9 +79,17 @@ module.exports = {
 
 ```
 
-Example
+###### Simple initialization
 
 ```
-var moduleConfig
 
 var filesModule = require('files')(sequelize, moduleConfig);
+
+```
+
+###### Module Api
+
+```
+
+
+```
