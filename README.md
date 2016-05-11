@@ -20,8 +20,7 @@ and then npm install from your project appropriate folder.
 
 If you want to play around with the demo folder you should checkout the git repo.
 Then you can 'npm install' it from the root folder and in order to obtain all required assets
-@/demo/public 'bower install'. One last requirement is to have local postres server running 
-also edit @/demo/config.demo.js with you local settings. Run /demo/server/server.js and you're ready to go.
+@/demo/public 'bower install'. One last requirement is to have local postres server running and to configure your server instances as follows. Finally run /demo/server/server.js and you're ready to go.
 
 ### Usage
 
