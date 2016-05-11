@@ -1,14 +1,16 @@
 /**
- * Created by yordan on 4/22/16.
+ * Created by yordan on 5/11/16.
  */
 'use strict';
 
 let path = require('path');
 const BASE = path.join(__dirname, './../');
+const PUBLIC_PATH = path.join(BASE, 'demo', 'public');
 const FILE_PATH = path.join(BASE, 'var', 'bigfiles');
 const TEMP_FILE_PATH = path.join(BASE, 'var', 'temp');
 
 module.exports = {
+	// module related
 	FILE_PATH: FILE_PATH,
 	TEMP_FILE_PATH: TEMP_FILE_PATH,
 	USER_QUOTA: 5,// GB
@@ -19,5 +21,20 @@ module.exports = {
 		AUCTION_CONTRACT: 'AUCTION_CONTRACT',
 		COMM_ATTACHMENT: 'COMM_ATTACHMENT'
 	},
-	TEMP_FILE_LIFETIME: 60// Minutes
+	TEMP_FILE_LIFETIME: 60,// Minutes
+	// server related
+	PORT: 3000,
+	PUBLIC_PATH: PUBLIC_PATH,
+	DB: {
+		HOST: 'localhost',
+		NAME: 'files-test',
+		USER: 'postgres',
+		PASSWORD: 'pass',
+		DIALECT: 'postgres'
+	},
+	LOG: {
+		SERVER_CONFIG: {
+			name: 'logger'
+		}
+	}
 };

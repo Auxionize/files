@@ -3,10 +3,13 @@
  */
 'use strict';
 
+// set environment and config =========================================
+process.env.NODE_ENV = 'development';
+
+let config = require('config');
+
 // dependencies =======================================================
 let co = require('co');
-let serverConfig = require('./config.demo');
-let moduleConfig = require('../../lib/config.def');
 let logger = require('express-bunyan-logger');
 let express = require('express');
 let passport = require('passport');
@@ -16,12 +19,12 @@ let bodyParser = require('skipper');
 let app = express();
 let Sequelize = require('sequelize');
 let sequelize = new Sequelize(
-	serverConfig.DB.NAME,
-	serverConfig.DB.USER,
-	serverConfig.DB.PASSWORD,
+	config.get('DB.NAME'),
+	config.get('DB.USER'),
+	config.get('DB.PASSWORD'),
 	{
-		host: serverConfig.DB.HOST,
-		dialect: serverConfig.DB.DIALECT
+		host: config.get('DB.HOST'),
+		dialect: config.get('DB.DIALECT')
 	}
 );
 
@@ -31,7 +34,7 @@ let Auction = require('./models/Auction')(sequelize);
 let Comment = require('./models/Comment')(sequelize);
 
 // uploader module import =============================================
-let uploaderModule = require('../../index')(sequelize, moduleConfig);
+let uploaderModule = require('../../index')(sequelize, config);
 let BigFile = uploaderModule.BigFile;
 let BigFileLink = uploaderModule.BigFileLink;
 
@@ -39,8 +42,7 @@ let BigFileLink = uploaderModule.BigFileLink;
 let DemoController = require('./controllers/DemoController');
 
 let ControllerArguments = [
-	moduleConfig,
-	serverConfig,
+	config,
 	BigFile,
 	BigFileLink,
 	Auction,
@@ -75,8 +77,8 @@ passport.deserializeUser(function(user, done) {
 // server config ======================================================
 app.enable('trust proxy');
 app.disable('x-powered-by');
-app.use(logger(serverConfig.LOG.SERVER_CONFIG));
-app.use(express.static(serverConfig.PUBLIC_PATH));
+app.use(logger(config.get('LOG.SERVER_CONFIG')));
+app.use(express.static(config.get('PUBLIC_PATH')));
 app.use(cookieParser());
 app.use(bodyParser());
 app.use(require('express-session')({ secret: 'mega secret', resave: false, saveUninitialized: false }));
@@ -143,7 +145,7 @@ co(function*() {
 		}
 	}
 
-	let server = app.listen(serverConfig.PORT, function() {
+	let server = app.listen(config.get('PORT'), function() {
 		let host = server.address().address;
 		let port = server.address().port;
 		let logString = 'Uploader app running on http://%s:%s';

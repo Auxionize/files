@@ -5,21 +5,16 @@
 
 // module dependencies ================================================
 const _ = require('lodash');
-let defaultConfig = require('./lib/config.def');
 
 // module definition ==================================================
 module.exports = function(sequelize, config) {
 
-	// Locals =========================================================
-	config = _.extend({}, defaultConfig, config || {});
+	if(_.isUndefined(config)) {
+		throw new Error('No configuration provided @module Files');
+	}
 
-	let cronConfig = {
-		TEMP_FILE_PATH: config.TEMP_FILE_PATH,
-		TEMP_FILE_LIFETIME: config.TEMP_FILE_LIFETIME
-	};
-	let bigFileLinkConfig = {LINK_TYPE: config.LINK_TYPE};
-	let cronJob = require('./lib/utils/cronJob')(cronConfig);
-	let BigFileLink = require('./lib/models/BigFileLink')(sequelize, bigFileLinkConfig);
+	let cronJob = require('./lib/utils/cronJob')(config);
+	let BigFileLink = require('./lib/models/BigFileLink')(sequelize, config);
 	let BigFile = require('./lib/models/BigFile')(sequelize, BigFileLink, config);
 
 	// associations ===================================================

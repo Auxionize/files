@@ -7,19 +7,17 @@
 let _ = require('lodash');
 let co = require('co');
 let coForeach = require('co-foreach');
-let moduleConfig, serverConfig, LINK_TYPE, BigFile, BigFileLink, Auction, Comment;
+let config, BigFile, BigFileLink, Auction, Comment;
 
 module.exports = {
 	initWith: function() {
 		let args = arguments;
 
-		moduleConfig = args[0];
-		serverConfig = args[1];
-		BigFile = args[2];
-		BigFileLink = args[3];
-		Auction = args[4];
-		Comment = args[5];
-		LINK_TYPE = moduleConfig.LINK_TYPE;
+		config = args[0];
+		BigFile = args[1];
+		BigFileLink = args[2];
+		Auction = args[3];
+		Comment = args[4];
 
 	},
 
@@ -42,7 +40,7 @@ module.exports = {
 
 	upload: function(req, res, next) {
 		co(function* () {
-			yield BigFile.upload(req, res, LINK_TYPE.USER_BUCKET);
+			yield BigFile.upload(req, res, config.get('LINK_TYPE.USER_BUCKET'));
 		}).catch(next);
 	},
 
@@ -84,13 +82,13 @@ module.exports = {
 
 	uploadContract: function(req, res, next) {
 		co(function* () {
-			yield BigFile.upload(req, res, LINK_TYPE.AUCTION_CONTRACT);
+			yield BigFile.upload(req, res, config.get('LINK_TYPE.AUCTION_CONTRACT'));
 		}).catch(next);
 	},
 
 	uploadAttachment: function(req, res, next) {
 		co(function* () {
-			yield BigFile.upload(req, res, LINK_TYPE.AUCTION_ATTACHMENT);
+			yield BigFile.upload(req, res, config.get('LINK_TYPE.AUCTION_ATTACHMENT'));
 		}).catch(next);
 	},
 
@@ -105,7 +103,7 @@ module.exports = {
 
 			coForeach(attachments, function*(attachment) {
 				yield BigFileLink.update({
-						type: LINK_TYPE.COMM_ATTACHMENT,
+						type: config.get('LINK_TYPE.COMM_ATTACHMENT'),
 						referredBy: comment.id
 					},
 					{where: {id: attachment.linkId}});
@@ -153,6 +151,6 @@ module.exports = {
 	},
 
 	serveIndex: function(req, res) {
-		res.sendFile('index.html', {root: serverConfig.PUBLIC_PATH});
+		res.sendFile('index.html', {root: config.get('PUBLIC_PATH')});
 	}
 };

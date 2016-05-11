@@ -26,6 +26,8 @@ build/Release
 .idea
 
 # Dependency directories
+config/*
+!config/default.js
 node_modules
 demo/public/bower_components
 var
