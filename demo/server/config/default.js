@@ -4,10 +4,10 @@
 'use strict';
 
 let path = require('path');
-const BASE = path.join(__dirname, './../');
+const BASE = path.join(__dirname, '../../../');
 const PUBLIC_PATH = path.join(BASE, 'demo', 'public');
-const FILE_PATH = path.join(BASE, 'var', 'bigfiles');
-const TEMP_FILE_PATH = path.join(BASE, 'var', 'temp');
+const FILE_PATH = path.join(BASE, 'demo', 'server', 'var', 'bigfiles');
+const TEMP_FILE_PATH = path.join(BASE, 'demo', 'server', 'var', 'temp');
 
 module.exports = {
 	// module related
